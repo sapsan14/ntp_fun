@@ -1,3 +1,8 @@
+# eval "$(ssh-agent -s)"
+# ssh-add ~/.ssh/id_ed25519 
+# chmod +x check_ntp.sh
+# ./check_ntp.sh > ntp_report.md
+
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -113,3 +118,32 @@ check_host() {
     echo "$stats"
     echo '```'
   else
+    echo "_No source statistics collected_"
+  fi
+  echo
+
+  echo "---"
+  echo "## 5. Overall Health Assessment"
+  echo "- Primary source line: \`${primary_line:-not found}\`"
+  echo "- Primary offset: ${primary_offset_us} µs (abs: ${abs_offset_us} µs)"
+  echo "- Status: **${primary_health}**"
+  echo
+
+  echo "Thresholds:"
+  echo "- Warning  > 5 ms  (5000 µs)"
+  echo "- Critical > 20 ms (20000 µs)"
+  echo
+
+  echo "---"
+  echo "## 6. Notes"
+  echo "- Offset evaluated as absolute value."
+  echo "- Persistent WARN/CRITICAL → check network path + NTP appliance health."
+  echo
+}
+
+# -------------------------------
+# Main loop over hosts
+# -------------------------------
+for host in "${TARGETS[@]}"; do
+  check_host "$host"
+done
